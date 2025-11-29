@@ -348,7 +348,7 @@ export default function CaresseInvite() {
   const details = {
     mapUrl:
       "https://www.google.com/maps/search/?api=1&query=Caresse%2C%20a%20Luxury%20Collection%20Resort%20%26%20Spa%2C%20Bodrum",
-    caresseUrl: "https://caressecollection.com/",
+    caresseUrl: "https://www.caresse.com.tr/en",
   };
 
   const text = useMemo(() => {
