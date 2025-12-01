@@ -148,7 +148,7 @@ function SectionShell({
 }) {
   return (
     <section id={id} className="scroll-mt-28">
-      <div className={cx("flex items-end justify-between gap-4", rtl && "text-right")}>
+      <div className={cx("flex items-end justify-between gap-4", rtl && "text-right")}> 
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h2>
           {subtitle ? <p className="mt-2 max-w-2xl text-slate-700">{subtitle}</p> : null}
@@ -163,7 +163,9 @@ function Nav({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
   const links = [
     { id: "venue", label: lang === "fa" ? "کارِسه" : "Venue" },
     { id: "bodrum", label: lang === "fa" ? "چرا بدروم" : "Why Bodrum" },
+    { id: "istanbul", label: lang === "fa" ? "استانبول" : "Istanbul" },
     { id: "weekend", label: lang === "fa" ? "برنامه" : "Weekend" },
+    { id: "notes", label: lang === "fa" ? "نکته‌ها" : "Notes" },
     { id: "travel", label: lang === "fa" ? "سفر" : "Travel" },
     { id: "gallery", label: lang === "fa" ? "عکس‌ها" : "Photos" },
   ];
@@ -346,19 +348,16 @@ export default function CaresseInvite() {
   const rtl = lang === "fa";
 
   const details = {
-    mapUrl:
-      "https://www.google.com/maps/search/?api=1&query=Caresse%2C%20a%20Luxury%20Collection%20Resort%20%26%20Spa%2C%20Bodrum",
     caresseUrl: "https://www.caresse.com.tr/en",
   };
 
   const text = useMemo(() => {
     const en = {
-      title: "An international Persian wedding on the Aegean Sea",
+      title: "An international Iranian wedding on the Aegean Sea",
       window: "May 31 – June 2, 2026",
       location: "Bodrum, Türkiye",
       copy:
-        "Coasting along the sparkling Aegean Sea and emerging from the turquoise horizon of Bodrum, Omid and Annika invite you to join them and their beautiful tribe at Caresse Luxury Resort for their final wedding ceremony on June 1st, 2026. Accommodation and time together at the resort will be provided May 31 – June 2 (nights of May 31 & June 1). Early check-in on May 31 and late checkout on June 2 are arranged.",
-      openMap: "Open map",
+        "Coasting along the sparkling Aegean Sea and emerging from the turquoise horizon of Bodrum, Omid and Annika invite you to join them and their beautiful tribe at Caresse Luxury Resort for their final wedding ceremony on June 1st, 2026. Accommodation at the resort will be provided May 31 – June 2 (nights of May 31 & June 1). Early check-in on May 31 and late checkout on June 2 are arranged.",
       caresseSite: "Caresse website",
       venueTitle: "The venue",
       venueSubtitle: "Private bay, beach decks, a gorgeous pool line, and that Bodrum light.",
@@ -419,14 +418,34 @@ export default function CaresseInvite() {
           text: "Castle of St. Peter and day trips with a real ‘wow’ factor.",
         },
         {
+          icon: <Sparkles className="h-5 w-5" />,
+          title: "The vibe",
+          text: "Relaxed luxury—sun-soaked, social, and effortlessly beautiful.",
+        },
+        {
           icon: <Plane className="h-5 w-5" />,
           title: "Easy access",
           text: "Fly into BJV, arrive fast, and you’re on the water quickly.",
         },
+      ],
+      istanbulTitle: "Add a few days in Istanbul",
+      istanbulSubtitle:
+        "If you can, tack on 2–4 days. It’s one of the world’s most magnetic cities—Bosphorus views, street food, historic neighborhoods, and a café culture that never runs out of energy.",
+      istanbulCards: [
         {
           icon: <Sparkles className="h-5 w-5" />,
-          title: "The vibe",
-          text: "Relaxed luxury—sun-soaked, social, and effortlessly beautiful.",
+          title: "Two continents, one skyline",
+          text: "Ferries across the Bosphorus, sunset bridges, and neighborhoods that change vibe block to block.",
+        },
+        {
+          icon: <Utensils className="h-5 w-5" />,
+          title: "Food worth the detour",
+          text: "Kebabs, meze, bakeries, coffee, and late-night bites—cheap thrills and elevated dining both.",
+        },
+        {
+          icon: <Camera className="h-5 w-5" />,
+          title: "History you can touch",
+          text: "Markets, mosques, palaces, and alleyways—ancient layers wrapped around modern city life.",
         },
       ],
       weekendTitle: "The weekend",
@@ -441,7 +460,7 @@ export default function CaresseInvite() {
         {
           day: "June 1",
           title: "Wedding day + after-party",
-          text: "Golden hour ceremony, dinner by the sea, and a late night.",
+          text: "Golden hour ceremony, dinner by the sea, and a late night. We’ll share the finalized agenda closer to the date.",
         },
         {
           day: "June 2",
@@ -449,17 +468,39 @@ export default function CaresseInvite() {
           text: "Slow morning, coffee, beach time, hugs—then departures.",
         },
       ],
+      notesTitle: "A quick note",
+      notesSubtitle: "Two small (but important) things for the wedding day.",
+      notesCards: [
+        {
+          icon: <Sparkles className="h-5 w-5" />,
+          title: "Dress code: Formal",
+          text: "For the wedding itself, formal attire—dress to impress.",
+        },
+        {
+          icon: <Info className="h-5 w-5" />,
+          title: "No gifts",
+          text: "Please no gifts. The trip and your presence is the gift.",
+        },
+      ],
       travelTitle: "Travel",
       travelSubtitle:
         "Most guests will fly into Milas–Bodrum Airport (BJV). Some routes connect via Istanbul (IST).",
       travelCards: [
-        { icon: <Plane className="h-5 w-5" />, title: "Airport", text: "BJV is the closest. Plan for a short drive to the resort." },
+        {
+          icon: <Plane className="h-5 w-5" />,
+          title: "Airport",
+          text: "BJV is the closest. Plan for about a 45-minute to 1-hour drive to the resort.",
+        },
         {
           icon: <MapPin className="h-5 w-5" />,
           title: "Getting around",
-          text: "Private transfers / taxis are easiest. We’ll share logistics closer to date.",
+          text: "Private transfers / taxis are easiest. Renting a car is also a great option for flexibility. We’ll share logistics closer to date.",
         },
-        { icon: <Info className="h-5 w-5" />, title: "Timezone", text: "Türkiye Time (TRT, UTC+3)." },
+        {
+          icon: <Info className="h-5 w-5" />,
+          title: "Timezone",
+          text: "Türkiye Time (TRT, UTC+3).",
+        },
       ],
       galleryTitle: "Caresse photo gallery",
       gallerySubtitle: "Tap any photo for full-screen.",
@@ -474,7 +515,6 @@ export default function CaresseInvite() {
       location: "بدروم، ترکیه",
       copy:
         "در کنار آب‌های فیروزه‌ای اژه و زیر آفتاب بدروم، امید و آنیکا شما را دعوت می‌کنند تا در ریزورت Caresse کنارشان باشید و مراسم اصلی عروسی‌شان را در ۱۱ خرداد ۱۴۰۵ جشن بگیریم. اقامت و وقتِ باهم‌بودن در ریزورت از ۱۰ تا ۱۲ خرداد فراهم است (شب‌های ۱۰ و ۱۱ خرداد). ورود زودتر در ۱۰ خرداد و خروج دیرتر در ۱۲ خرداد هماهنگ شده است.",
-      openMap: "نقشه گوگل",
       caresseSite: "وب‌سایت Caresse",
       venueTitle: "رزورت کارِسه",
       venueSubtitle: "خلیج دنج، دک‌های ساحلی، استخر جذاب و نورِ خاصِ بدروم.",
@@ -534,14 +574,34 @@ export default function CaresseInvite() {
           text: "قلعه سنت‌پیتر و جاهای دیدنی برای یک گشت کوتاه با کلی «وای!».",
         },
         {
+          icon: <Sparkles className="h-5 w-5" />,
+          title: "حال‌و‌هوا",
+          text: "لوکسِ آرام و دوست‌داشتنی—آفتابی، اجتماعی، بدون شلوغیِ بی‌مورد.",
+        },
+        {
           icon: <Plane className="h-5 w-5" />,
           title: "دسترسی آسان",
           text: "پرواز به BJV، رسیدن سریع، و بعد مستقیم کنار دریا.",
         },
+      ],
+      istanbulTitle: "چند روزی هم استانبول بمانید",
+      istanbulSubtitle:
+        "اگر برنامه‌تان اجازه می‌دهد، ۲ تا ۴ روز هم به استانبول اختصاص بدهید. شهری فوق‌العاده پرانرژی با منظره‌های بسفر، فرهنگ کافه‌نشینی، غذاهای خیابانی، محله‌های تاریخی و زندگی شهری جذاب.",
+      istanbulCards: [
         {
           icon: <Sparkles className="h-5 w-5" />,
-          title: "حال‌و‌هوا",
-          text: "لوکسِ آرام و دوست‌داشتنی—آفتابی، اجتماعی، بدون شلوغیِ بی‌مورد.",
+          title: "دو قاره، یک افق",
+          text: "فِری روی بسفر، غروب‌های طلایی، و محله‌هایی که هرکدام یک دنیا حس‌وحال دارند.",
+        },
+        {
+          icon: <Utensils className="h-5 w-5" />,
+          title: "غذاهایی که ارزش سفر دارند",
+          text: "کباب، مزه، نان و شیرینی‌ها، قهوه و خوراکی‌های نیمه‌شب—هم اقتصادی هم لاکچری.",
+        },
+        {
+          icon: <Camera className="h-5 w-5" />,
+          title: "تاریخِ زنده",
+          text: "بازارها، مسجدها، کاخ‌ها و کوچه‌ها—لایه‌های چند هزار ساله در دل یک شهر مدرن.",
         },
       ],
       weekendTitle: "برنامه کلی",
@@ -555,7 +615,7 @@ export default function CaresseInvite() {
         {
           day: "۱۱ خرداد",
           title: "روز عروسی + افترپارتی",
-          text: "مراسم حوالی غروب، شام کنار دریا و جشن شبانه.",
+          text: "مراسم حوالی غروب، شام کنار دریا و جشن شبانه. جزئیات و برنامه نهایی را نزدیک‌تر به تاریخ ارسال می‌کنیم.",
         },
         {
           day: "۱۲ خرداد",
@@ -563,15 +623,33 @@ export default function CaresseInvite() {
           text: "صبح آرام، قهوه، یک شنای آخر و خداحافظی‌ها—بعد حرکت.",
         },
       ],
+      notesTitle: "یک نکته کوتاه",
+      notesSubtitle: "دو مورد کوچک (اما مهم) برای روز عروسی.",
+      notesCards: [
+        {
+          icon: <Sparkles className="h-5 w-5" />,
+          title: "پوشش مراسم: رسمی",
+          text: "برای خودِ مراسم عروسی، پوشش رسمی—شیک و آراسته.",
+        },
+        {
+          icon: <Info className="h-5 w-5" />,
+          title: "بدون هدیه",
+          text: "لطفاً هیچ هدیه‌ای تهیه نکنید. حضور شما و زحمتی که برای این سفر می‌کشید بزرگ‌ترین هدیه است.",
+        },
+      ],
       travelTitle: "سفر",
       travelSubtitle:
         "بیشتر مهمان‌ها به فرودگاه میلاس–بدروم (BJV) پرواز می‌کنند؛ بعضی مسیرها با اتصال از استانبول (IST) است.",
       travelCards: [
-        { icon: <Plane className="h-5 w-5" />, title: "فرودگاه", text: "نزدیک‌ترین فرودگاه BJV است؛ مسیر زمینی کوتاه تا ریزورت." },
+        {
+          icon: <Plane className="h-5 w-5" />,
+          title: "فرودگاه",
+          text: "نزدیک‌ترین فرودگاه BJV است؛ مسیر زمینی تا ریزورت حدود ۴۵ دقیقه تا ۱ ساعت است.",
+        },
         {
           icon: <MapPin className="h-5 w-5" />,
           title: "رفت‌وآمد",
-          text: "ترنسفر خصوصی/تاکسی راحت‌ترین گزینه است؛ جزئیات را نزدیک‌تر ارسال می‌کنیم.",
+          text: "ترنسفر خصوصی/تاکسی راحت‌ترین گزینه است؛ اجاره خودرو هم برای انعطاف بیشتر گزینهٔ خوبی است. جزئیات را نزدیک‌تر ارسال می‌کنیم.",
         },
         { icon: <Info className="h-5 w-5" />, title: "ساعت", text: "ساعت ترکیه (TRT، UTC+3)." },
       ],
@@ -721,8 +799,10 @@ export default function CaresseInvite() {
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const close = () => setLightboxIndex(null);
-  const prev = () => setLightboxIndex((i) => (i === null ? null : (i - 1 + visiblePhotos.length) % visiblePhotos.length));
-  const next = () => setLightboxIndex((i) => (i === null ? null : (i + 1) % visiblePhotos.length));
+  const prev = () =>
+    setLightboxIndex((i) => (i === null ? null : (i - 1 + visiblePhotos.length) % visiblePhotos.length));
+  const next = () =>
+    setLightboxIndex((i) => (i === null ? null : (i + 1) % visiblePhotos.length));
 
   return (
     <div
@@ -730,7 +810,8 @@ export default function CaresseInvite() {
       dir={rtl ? "rtl" : "ltr"}
       className={cx(
         "min-h-screen bg-[#f7f2e9] text-slate-900",
-        rtl && "[font-family:ui-sans-serif,system-ui,Segoe\ UI,Tahoma,Arial,\"Noto\ Naskh\ Arabic\",\"Vazirmatn\",\"IRANSans\",sans-serif]"
+        rtl &&
+          "[font-family:ui-sans-serif,system-ui,'Segoe UI',Tahoma,Arial,'Noto Naskh Arabic','Vazirmatn','IRANSans',sans-serif]"
       )}
     >
       <Nav lang={lang} setLang={setLang} />
@@ -753,7 +834,7 @@ export default function CaresseInvite() {
 
         <div className="relative mx-auto max-w-6xl px-4 pt-28 pb-10 sm:px-6 sm:pt-32 sm:pb-14">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-end">
-            <div className={cx("lg:col-span-6", rtl && "text-right")}>
+            <div className={cx("lg:col-span-6", rtl && "text-right")}> 
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -772,7 +853,7 @@ export default function CaresseInvite() {
                 {text.copy}
               </motion.p>
 
-              <div className={cx("mt-6 flex flex-wrap gap-2", rtl && "justify-end")}>
+              <div className={cx("mt-6 flex flex-wrap gap-2", rtl && "justify-end")}> 
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/45 px-3 py-1 text-sm text-slate-900 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur">
                   <CalendarDays className="h-4 w-4 opacity-80" />
                   <span className="font-medium">{text.window}</span>
@@ -783,16 +864,15 @@ export default function CaresseInvite() {
                 </div>
               </div>
 
-              <div className={cx("mt-7 flex flex-wrap gap-3", rtl && "justify-end")}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href = details.caresseUrl;
-                  }}
+              <div className={cx("mt-7 flex flex-wrap gap-3", rtl && "justify-end")}> 
+                <a
+                  href={details.caresseUrl}
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800"
                 >
                   {text.caresseSite} <ExternalLink className="ml-2 h-4 w-4" />
-                </button>
+                </a>
               </div>
             </div>
 
@@ -870,14 +950,30 @@ export default function CaresseInvite() {
           </div>
         </SectionShell>
 
+        <SectionShell id="istanbul" title={text.istanbulTitle} subtitle={text.istanbulSubtitle} rtl={rtl}>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {text.istanbulCards.map((c, idx) => (
+              <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
+            ))}
+          </div>
+        </SectionShell>
+
         <SectionShell id="weekend" title={text.weekendTitle} subtitle={text.weekendSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {text.weekend.map((c) => (
-              <div key={c.day} className={cx("rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm", rtl && "text-right")}>
+              <div key={c.day} className={cx("rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm", rtl && "text-right")}> 
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{c.day}</div>
                 <div className="mt-1 text-lg font-semibold">{c.title}</div>
                 <div className="mt-2 text-sm text-slate-700">{c.text}</div>
               </div>
+            ))}
+          </div>
+        </SectionShell>
+
+        <SectionShell id="notes" title={text.notesTitle} subtitle={text.notesSubtitle} rtl={rtl}>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {text.notesCards.map((c, idx) => (
+              <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
@@ -937,11 +1033,18 @@ export default function CaresseInvite() {
             </div>
           ) : null}
         </SectionShell>
-
-        <div className={cx("rounded-3xl border border-slate-900/10 bg-white/60 p-6 text-center shadow-sm", rtl && "text-right")}>
-          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white">
-            <Sparkles className="h-4 w-4" />
-            Bodrum • Aegean Sea • 2026
+        <div
+          className={cx(
+            "rounded-3xl border border-slate-900/10 bg-white/60 p-6 text-center shadow-sm",
+            rtl && "text-right"
+          )}
+        >
+          <div className={cx("flex justify-center", rtl && "justify-end")}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white">
+              <Sparkles className="h-4 w-4" />
+              Bodrum • Aegean Sea • 2026
+            </div>
           </div>
           <div className="mt-3 text-xl font-semibold">{text.footer}</div>
           <div className="mt-1 text-sm text-slate-700">{text.footer2}</div>
