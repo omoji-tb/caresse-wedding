@@ -2,20 +2,22 @@ import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CalendarDays,
-  ExternalLink,
-  MapPin,
-  Sparkles,
-  Waves,
-  X,
+  Camera,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   Info,
+  MapPin,
   Plane,
-  Camera,
+  Sparkles,
   Utensils,
+  Waves,
+  X,
 } from "lucide-react";
 
 type Lang = "en" | "fa";
+
+type Card = { icon: React.ReactNode; title: string; text: string };
 
 type Photo = {
   id: string;
@@ -41,13 +43,13 @@ function svgPlaceholderDataUri(label: string) {
     <filter id="grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
-      <feComponentTransfer><feFuncA type="table" tableValues="0 0.16"/></feComponentTransfer>
+      <feComponentTransfer><feFuncA type="table" tableValues="0 0.14"/></feComponentTransfer>
     </filter>
   </defs>
   <rect width="1600" height="900" fill="url(#g)"/>
-  <rect width="1600" height="900" filter="url(#grain)" opacity="0.25"/>
-  <circle cx="1260" cy="260" r="220" fill="#FFD9A8" opacity="0.65"/>
-  <circle cx="1320" cy="230" r="160" fill="#FFC2D9" opacity="0.30"/>
+  <rect width="1600" height="900" filter="url(#grain)" opacity="0.32"/>
+  <circle cx="1240" cy="260" r="240" fill="#FFD9A8" opacity="0.72"/>
+  <circle cx="1320" cy="230" r="170" fill="#FFC2D9" opacity="0.34"/>
   <path d="M0 640 C 280 580, 520 740, 820 670 C 1080 610, 1320 730, 1600 650 L1600 900 L0 900 Z" fill="#0EA5A4" opacity="0.13"/>
   <text x="80" y="120" font-family="ui-sans-serif, system-ui" font-size="44" fill="#0f172a" opacity="0.74">Caresse Bodrum</text>
   <text x="80" y="172" font-family="ui-sans-serif, system-ui" font-size="26" fill="#0f172a" opacity="0.55">${safe}</text>
@@ -55,20 +57,24 @@ function svgPlaceholderDataUri(label: string) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-function withMarriottSizing(url: string, wid: number) {
+function smartUrlSizing(url: string, wid: number) {
   try {
     const u = new URL(url);
-    if (u.hostname.includes("cache.marriott.com") && u.pathname.includes("/is/image/")) {
+    if (!u.hostname.includes("cache.marriott.com")) return url;
+
+    if (u.pathname.includes("/is/image/")) {
       u.searchParams.set("wid", String(wid));
       u.searchParams.set("fit", "constrain");
       return u.toString();
     }
-    if (u.hostname.includes("cache.marriott.com") && u.pathname.includes("/content/dam/marriott-renditions/")) {
+
+    if (u.pathname.includes("/content/dam/marriott-renditions/")) {
       u.searchParams.set("downsize", `${wid}px:*`);
       u.searchParams.set("output-quality", "86");
       u.searchParams.set("interpolation", "progressive-bilinear");
       return u.toString();
     }
+
     return url;
   } catch {
     return url;
@@ -78,10 +84,11 @@ function withMarriottSizing(url: string, wid: number) {
 function expandSources(primary: string) {
   const s = new Set<string>();
   const push = (u: string) => u && s.add(u);
-  push(withMarriottSizing(primary, 2000));
-  push(withMarriottSizing(primary, 1600));
-  push(withMarriottSizing(primary, 1200));
-  push(withMarriottSizing(primary, 900));
+  push(smartUrlSizing(primary, 2200));
+  push(smartUrlSizing(primary, 1800));
+  push(smartUrlSizing(primary, 1400));
+  push(smartUrlSizing(primary, 1100));
+  push(smartUrlSizing(primary, 900));
   push(primary);
   return Array.from(s);
 }
@@ -133,22 +140,38 @@ function SmartImage({
   );
 }
 
+function InfoCard({ icon, title, text }: Card) {
+  return (
+    <div className="rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-fuchsia-600 text-white shadow-sm">
+          {icon}
+        </div>
+        <div>
+          <div className="text-lg font-semibold">{title}</div>
+          <div className="mt-1 text-sm text-slate-700">{text}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SectionShell({
   id,
   title,
   subtitle,
-  children,
   rtl,
+  children,
 }: {
   id: string;
   title: string;
   subtitle?: string;
-  children: React.ReactNode;
   rtl: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-28">
-      <div className={cx("flex items-end justify-between gap-4", rtl && "text-right")}> 
+      <div className={cx("flex items-end justify-between gap-4", rtl && "text-right")}>
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h2>
           {subtitle ? <p className="mt-2 max-w-2xl text-slate-700">{subtitle}</p> : null}
@@ -156,58 +179,6 @@ function SectionShell({
       </div>
       <div className="mt-5">{children}</div>
     </section>
-  );
-}
-
-function Nav({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const links = [
-    { id: "venue", label: lang === "fa" ? "کارِسه" : "Venue" },
-    { id: "bodrum", label: lang === "fa" ? "چرا بدروم" : "Why Bodrum" },
-    { id: "istanbul", label: lang === "fa" ? "استانبول" : "Istanbul" },
-    { id: "weekend", label: lang === "fa" ? "برنامه" : "Weekend" },
-    { id: "notes", label: lang === "fa" ? "نکته‌ها" : "Notes" },
-    { id: "travel", label: lang === "fa" ? "سفر" : "Travel" },
-    { id: "gallery", label: lang === "fa" ? "عکس‌ها" : "Photos" },
-  ];
-
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
-      <div className="pointer-events-auto mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-3 rounded-2xl border border-white/50 bg-white/45 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.10)] backdrop-blur">
-          <div className="flex items-center justify-between gap-2">
-            <a
-              href="#top"
-              className="rounded-xl px-3 py-2 text-sm font-semibold tracking-tight text-slate-900 hover:bg-white/60"
-            >
-              {lang === "fa" ? "امید و آنیکا" : "Omid & Annika"}
-            </a>
-
-            <div className="hidden sm:flex items-center gap-1">
-              {links.map((l) => (
-                <a
-                  key={l.id}
-                  href={`#${l.id}`}
-                  className="rounded-xl px-3 py-2 text-sm text-slate-800 hover:bg-white/60"
-                >
-                  {l.label}
-                </a>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setLang(lang === "en" ? "fa" : "en")}
-                className="rounded-xl border border-slate-900/10 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white"
-                aria-label="Toggle language"
-              >
-                {lang === "en" ? "FA" : "EN"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -301,24 +272,75 @@ function Lightbox({
   );
 }
 
-function InfoCard({
-  icon,
-  title,
-  text,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
+function Nav({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
+  const links = [
+    { id: "venue", label: lang === "fa" ? "کارِسه" : "Venue" },
+    { id: "bodrum", label: lang === "fa" ? "چرا بدروم" : "Why Bodrum" },
+    { id: "istanbul", label: lang === "fa" ? "استانبول" : "Istanbul" },
+    { id: "weekend", label: lang === "fa" ? "برنامه" : "Weekend" },
+    { id: "notes", label: lang === "fa" ? "نکته‌ها" : "Notes" },
+    { id: "travel", label: lang === "fa" ? "سفر" : "Travel" },
+    { id: "gallery", label: lang === "fa" ? "عکس‌ها" : "Photos" },
+  ];
+
+  const scrollToId = (id: string) => {
+    if (typeof window === "undefined") return;
+
+    if (id === "top") {
+      window.history.replaceState(null, "", "#top");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const nav = document.getElementById("site-nav");
+    const offset = (nav?.getBoundingClientRect().height ?? 88) + 12;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+
+    window.history.replaceState(null, "", `#${id}`);
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
   return (
-    <div className="rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-teal-600 to-fuchsia-600 text-white shadow-sm">
-          {icon}
-        </div>
-        <div>
-          <div className="text-lg font-semibold">{title}</div>
-          <div className="mt-1 text-sm text-slate-700">{text}</div>
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
+      <div className="pointer-events-auto mx-auto max-w-6xl px-4 sm:px-6">
+        <div
+          id="site-nav"
+          className="mt-3 rounded-2xl border border-white/50 bg-white/45 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.10)] backdrop-blur"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => scrollToId("top")}
+              className="rounded-xl px-3 py-2 text-sm font-semibold tracking-tight text-slate-900 hover:bg-white/60"
+            >
+              {lang === "fa" ? "امید و آنیکا" : "Omid & Annika"}
+            </button>
+
+            <div className="hidden sm:flex items-center gap-1">
+              {links.map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => scrollToId(l.id)}
+                  className="rounded-xl px-3 py-2 text-sm text-slate-800 hover:bg-white/60"
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setLang(lang === "en" ? "fa" : "en")}
+              className="rounded-xl border border-slate-900/10 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white"
+              aria-label="Toggle language"
+            >
+              {lang === "en" ? "FA" : "EN"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -333,7 +355,7 @@ export default function CaresseInvite() {
       const saved = window.localStorage.getItem("wedding_lang");
       if (saved === "fa" || saved === "en") setLang(saved);
     } catch {
-      // no-op
+      void 0;
     }
   }, []);
 
@@ -341,150 +363,85 @@ export default function CaresseInvite() {
     try {
       window.localStorage.setItem("wedding_lang", lang);
     } catch {
-      // no-op
+      void 0;
     }
   }, [lang]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash?.replace("#", "");
+    if (!hash || hash === "top") return;
+
+    const el = document.getElementById(hash);
+    if (!el) return;
+
+    const nav = document.getElementById("site-nav");
+    const offset = (nav?.getBoundingClientRect().height ?? 88) + 12;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+
+    requestAnimationFrame(() => window.scrollTo({ top, behavior: "smooth" }));
+  }, []);
+
   const rtl = lang === "fa";
 
-  const details = {
-    caresseUrl: "https://www.caresse.com.tr/en",
-  };
+  const details = useMemo(
+    () => ({
+      caresseUrl: "https://www.caresse.com.tr/en",
+    }),
+    []
+  );
 
-  const text = useMemo(() => {
+  const t = useMemo(() => {
     const en = {
       title: "An international Iranian wedding on the Aegean Sea",
       window: "May 31 – June 2, 2026",
       location: "Bodrum, Türkiye",
       copy:
         "Coasting along the sparkling Aegean Sea and emerging from the turquoise horizon of Bodrum, Omid and Annika invite you to join them and their beautiful tribe at Caresse Luxury Resort for their final wedding ceremony on June 1st, 2026. Accommodation at the resort will be provided May 31 – June 2 (nights of May 31 & June 1). Early check-in on May 31 and late checkout on June 2 are arranged.",
-      caresseSite: "Caresse website",
+      caresseSite: "Visit the Caresse website",
+      rsvp: "RSVP by December 31, 2025 — please let Omid or Annika know.",
       venueTitle: "The venue",
       venueSubtitle: "Private bay, beach decks, a gorgeous pool line, and that Bodrum light.",
       venueCards: [
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "Beach access",
-          text: "Steps from rooms to sea, with decks and sunbeds right on the waterline.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "Food + atmosphere",
-          text: "Beach club energy by day, elevated dining and cocktails by night.",
-        },
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "That Caresse energy",
-          text: "Clean lines, warm textures, and sunsets that keep everyone outside.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "Design details",
-          text: "White stone, teak, linen, and light—simple, modern, and warm.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "Easy for groups",
-          text: "Quiet corners to recharge, and social spots for the whole tribe.",
-        },
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "Sea-first days",
-          text: "Coffee → swim → sun → repeat. The resort flow is effortless.",
-        },
-      ],
+        { icon: <Waves className="h-5 w-5" />, title: "Beach access", text: "Steps from rooms to sea, with decks and sunbeds right on the waterline." },
+        { icon: <Utensils className="h-5 w-5" />, title: "Food + atmosphere", text: "Beach club energy by day, elevated dining and cocktails by night." },
+        { icon: <Sparkles className="h-5 w-5" />, title: "That Caresse energy", text: "Clean lines, warm textures, and sunsets that keep everyone outside." },
+      ] as Card[],
       bodrumTitle: "Why Bodrum",
-      bodrumSubtitle:
-        "A place that feels like a Mediterranean postcard—history, water, food, and late golden sunsets.",
+      bodrumSubtitle: "A place that feels like a Mediterranean postcard—history, water, food, and late golden sunsets.",
       bodrumCards: [
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "Beaches + coves",
-          text: "Clear water, hidden bays, and easy swim days.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "Aegean food culture",
-          text: "Seafood, mezze, and long dinners that start late and end even later.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "Old Town + marina",
-          text: "Boutique shops, cafés, and nighttime strolling in warm air.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "History nearby",
-          text: "Castle of St. Peter and day trips with a real ‘wow’ factor.",
-        },
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "The vibe",
-          text: "Relaxed luxury—sun-soaked, social, and effortlessly beautiful.",
-        },
-        {
-          icon: <Plane className="h-5 w-5" />,
-          title: "Easy access",
-          text: "Fly into BJV, arrive fast, and you’re on the water quickly.",
-        },
-      ],
+        { icon: <Waves className="h-5 w-5" />, title: "Beaches + coves", text: "Clear water, hidden bays, and easy swim days." },
+        { icon: <Camera className="h-5 w-5" />, title: "Old Town + marina", text: "Boutiques, cafés, and nighttime strolling in warm air." },
+        { icon: <Info className="h-5 w-5" />, title: "History nearby", text: "Castle of St. Peter and day trips with a real wow factor." },
+      ] as Card[],
       istanbulTitle: "Add a few days in Istanbul",
       istanbulSubtitle:
         "If you can, tack on 2–4 days. It’s one of the world’s most magnetic cities—Bosphorus views, street food, historic neighborhoods, and a café culture that never runs out of energy.",
       istanbulCards: [
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "Two continents, one skyline",
-          text: "Ferries across the Bosphorus, sunset bridges, and neighborhoods that change vibe block to block.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "Food worth the detour",
-          text: "Kebabs, meze, bakeries, coffee, and late-night bites—cheap thrills and elevated dining both.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "History you can touch",
-          text: "Markets, mosques, palaces, and alleyways—ancient layers wrapped around modern city life.",
-        },
-      ],
+        { icon: <Sparkles className="h-5 w-5" />, title: "Two continents, one skyline", text: "Ferries across the Bosphorus and neighborhoods that change vibe block to block." },
+        { icon: <Utensils className="h-5 w-5" />, title: "Food worth the detour", text: "Meze, bakeries, coffee, and late-night bites—cheap thrills and elevated dining." },
+        { icon: <Camera className="h-5 w-5" />, title: "History you can touch", text: "Markets, mosques, palaces, and alleyways—ancient layers wrapped around modern city life." },
+      ] as Card[],
       weekendTitle: "The weekend",
-      weekendSubtitle:
-        "Two nights at the resort (May 31 & June 1), with early check-in on May 31 and late checkout on June 2.",
+      weekendSubtitle: "Two nights at the resort (May 31 & June 1), with early check-in on May 31 and late checkout on June 2.",
       weekend: [
-        {
-          day: "May 31",
-          title: "Early check-in + welcome",
-          text: "Arrive, exhale, swim, sunset. We’ll share the plan for the evening once it’s finalized.",
-        },
+        { day: "May 31", title: "Early check-in + welcome", text: "Arrive, exhale, swim, sunset. We’ll share the plan for the evening once it’s finalized." },
         {
           day: "June 1",
           title: "Wedding day + after-party",
           text: "Golden hour ceremony, dinner by the sea, and a late night. We’ll share the finalized agenda closer to the date.",
         },
-        {
-          day: "June 2",
-          title: "Late checkout + farewells",
-          text: "Slow morning, coffee, beach time, hugs—then departures.",
-        },
+        { day: "June 2", title: "Late checkout + farewells", text: "Slow morning, coffee, beach time, hugs—then departures." },
       ],
-      notesTitle: "A quick note",
+      notesTitle: "Notes",
       notesSubtitle: "Two small (but important) things for the wedding day.",
       notesCards: [
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "Dress code: Formal",
-          text: "For the wedding itself, formal attire—dress to impress.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "No gifts",
-          text: "Please no gifts. The trip and your presence is the gift.",
-        },
-      ],
+        { icon: <Sparkles className="h-5 w-5" />, title: "Dress code: Formal", text: "For the wedding itself, formal attire—dress to impress." },
+        { icon: <Info className="h-5 w-5" />, title: "No gifts", text: "Please no gifts. The trip and your presence is the gift." },
+        { icon: <Utensils className="h-5 w-5" />, title: "Come hungry", text: "We are planning an incredible dinner and cocktails—more details soon." },
+      ] as Card[],
       travelTitle: "Travel",
-      travelSubtitle:
-        "Most guests will fly into Milas–Bodrum Airport (BJV). Some routes connect via Istanbul (IST).",
+      travelSubtitle: "Most guests will fly into Milas–Bodrum Airport (BJV). Some routes connect via Istanbul (IST).",
       travelCards: [
         {
           icon: <Plane className="h-5 w-5" />,
@@ -496,12 +453,8 @@ export default function CaresseInvite() {
           title: "Getting around",
           text: "Private transfers / taxis are easiest. Renting a car is also a great option for flexibility. We’ll share logistics closer to date.",
         },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "Timezone",
-          text: "Türkiye Time (TRT, UTC+3).",
-        },
-      ],
+        { icon: <Info className="h-5 w-5" />, title: "Timezone", text: "Türkiye Time (TRT, UTC+3)." },
+      ] as Card[],
       galleryTitle: "Caresse photo gallery",
       gallerySubtitle: "Tap any photo for full-screen.",
       loadMore: "Load more photos",
@@ -514,145 +467,60 @@ export default function CaresseInvite() {
       window: "۱۰ تا ۱۲ خرداد ۱۴۰۵",
       location: "بدروم، ترکیه",
       copy:
-        "در کنار آب‌های فیروزه‌ای اژه و زیر آفتاب بدروم، امید و آنیکا شما را دعوت می‌کنند تا در ریزورت Caresse کنارشان باشید و مراسم اصلی عروسی‌شان را در ۱۱ خرداد ۱۴۰۵ جشن بگیریم. اقامت و وقتِ باهم‌بودن در ریزورت از ۱۰ تا ۱۲ خرداد فراهم است (شب‌های ۱۰ و ۱۱ خرداد). ورود زودتر در ۱۰ خرداد و خروج دیرتر در ۱۲ خرداد هماهنگ شده است.",
+        "در کنار آب‌های فیروزه‌ای اژه و زیر آفتاب بدروم، امید و آنیکا شما را دعوت می‌کنند تا در ریزورت Caresse کنارشان باشید و مراسم اصلی عروسی‌شان را در ۱۱ خرداد ۱۴۰۵ جشن بگیریم. اقامت در ریزورت از ۱۰ تا ۱۲ خرداد فراهم است (شب‌های ۱۰ و ۱۱ خرداد). ورود زودتر در ۱۰ خرداد و خروج دیرتر در ۱۲ خرداد هماهنگ شده است.",
       caresseSite: "وب‌سایت Caresse",
+      rsvp: "لطفاً حداکثر تا ۱۰ دی ۱۴۰۴ حضور خود را با پیام به امید یا آنیکا تأیید کنید.",
       venueTitle: "رزورت کارِسه",
-      venueSubtitle: "خلیج دنج، دک‌های ساحلی، استخر جذاب و نورِ خاصِ بدروم.",
+      venueSubtitle: "خلیج دنج، دک‌های ساحلی و نورِ خاصِ بدروم.",
       venueCards: [
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "دسترسی به ساحل",
-          text: "چند قدم تا دریا؛ دک‌ها و تخت‌های ساحلی دقیقاً کنار آب.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "غذا و فضا",
-          text: "روزها حال‌وهوای بیچ‌کلاب، شب‌ها شام و کوکتل‌های عالی.",
-        },
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "حس‌وحالِ کارِسه",
-          text: "طراحی مینیمال با بافت‌های گرم و غروب‌هایی که نمی‌گذارد زود به اتاق برگردید.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "جزئیات طراحی",
-          text: "سنگ روشن، چوب، پارچه‌های طبیعی و نور—ساده، شیک و گرم.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "مناسب برای گروه",
-          text: "هم فضا برای دورهمی، هم گوشه‌های آرام برای استراحت و ریلکس.",
-        },
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "روزهای دریایی",
-          text: "قهوه، شنا، آفتاب… دوباره از اول. همه‌چیز راحت و روان پیش می‌رود.",
-        },
-      ],
+        { icon: <Waves className="h-5 w-5" />, title: "دسترسی به ساحل", text: "چند قدم تا دریا؛ دک‌ها و تخت‌های ساحلی دقیقاً کنار آب." },
+        { icon: <Utensils className="h-5 w-5" />, title: "غذا و فضا", text: "روزها حال‌وهوای بیچ‌کلاب، شب‌ها شام و کوکتل‌های عالی." },
+        { icon: <Sparkles className="h-5 w-5" />, title: "حس‌وحالِ کارِسه", text: "طراحی مینیمال با بافت‌های گرم و غروب‌های تماشایی." },
+      ] as Card[],
       bodrumTitle: "چرا بدروم؟",
       bodrumSubtitle: "ترکیبی از دریا، غذا، تاریخ و حال‌وهوای مدیترانه‌ای.",
       bodrumCards: [
-        {
-          icon: <Waves className="h-5 w-5" />,
-          title: "ساحل و خلیج‌ها",
-          text: "آب شفاف، خلیج‌های دنج و روزهای بی‌دغدغه برای شنا.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "فرهنگ غذایی اژه",
-          text: "غذاهای دریایی و مزه‌ها؛ شام‌های طولانی و خوش‌نشین.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "شهر قدیمی و مارینا",
-          text: "بوتیک‌ها، کافه‌ها و قدم‌زدن شبانه در هوای گرم.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "تاریخ نزدیک",
-          text: "قلعه سنت‌پیتر و جاهای دیدنی برای یک گشت کوتاه با کلی «وای!».",
-        },
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "حال‌و‌هوا",
-          text: "لوکسِ آرام و دوست‌داشتنی—آفتابی، اجتماعی، بدون شلوغیِ بی‌مورد.",
-        },
-        {
-          icon: <Plane className="h-5 w-5" />,
-          title: "دسترسی آسان",
-          text: "پرواز به BJV، رسیدن سریع، و بعد مستقیم کنار دریا.",
-        },
-      ],
+        { icon: <Waves className="h-5 w-5" />, title: "ساحل و خلیج‌ها", text: "آب شفاف، خلیج‌های دنج و روزهای بی‌دغدغه برای شنا." },
+        { icon: <Camera className="h-5 w-5" />, title: "شهر قدیمی و مارینا", text: "بوتیک‌ها، کافه‌ها و قدم‌زدن شبانه در هوای گرم." },
+        { icon: <Info className="h-5 w-5" />, title: "تاریخ نزدیک", text: "قلعه سنت‌پیتر و جاهای دیدنی برای یک گشت کوتاه." },
+      ] as Card[],
       istanbulTitle: "چند روزی هم استانبول بمانید",
       istanbulSubtitle:
-        "اگر برنامه‌تان اجازه می‌دهد، ۲ تا ۴ روز هم به استانبول اختصاص بدهید. شهری فوق‌العاده پرانرژی با منظره‌های بسفر، فرهنگ کافه‌نشینی، غذاهای خیابانی، محله‌های تاریخی و زندگی شهری جذاب.",
+        "اگر برنامه‌تان اجازه می‌دهد، ۲ تا ۴ روز هم به استانبول اختصاص بدهید. منظره‌های بسفر، فرهنگ کافه‌نشینی، غذاهای خیابانی و محله‌های تاریخی واقعاً ارزشش را دارد.",
       istanbulCards: [
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "دو قاره، یک افق",
-          text: "فِری روی بسفر، غروب‌های طلایی، و محله‌هایی که هرکدام یک دنیا حس‌وحال دارند.",
-        },
-        {
-          icon: <Utensils className="h-5 w-5" />,
-          title: "غذاهایی که ارزش سفر دارند",
-          text: "کباب، مزه، نان و شیرینی‌ها، قهوه و خوراکی‌های نیمه‌شب—هم اقتصادی هم لاکچری.",
-        },
-        {
-          icon: <Camera className="h-5 w-5" />,
-          title: "تاریخِ زنده",
-          text: "بازارها، مسجدها، کاخ‌ها و کوچه‌ها—لایه‌های چند هزار ساله در دل یک شهر مدرن.",
-        },
-      ],
+        { icon: <Sparkles className="h-5 w-5" />, title: "دو قاره، یک افق", text: "فِری روی بسفر و محله‌هایی با حال‌وهوای متفاوت." },
+        { icon: <Utensils className="h-5 w-5" />, title: "غذاهایی که ارزش سفر دارند", text: "مزه، نان و شیرینی، قهوه و خوراکی‌های نیمه‌شب." },
+        { icon: <Camera className="h-5 w-5" />, title: "تاریخِ زنده", text: "بازارها، مسجدها و کاخ‌ها—گذشته و حال کنار هم." },
+      ] as Card[],
       weekendTitle: "برنامه کلی",
       weekendSubtitle: "اقامت دو شب (۱۰ و ۱۱ خرداد) با ورود زودتر در ۱۰ خرداد و خروج دیرتر در ۱۲ خرداد.",
       weekend: [
-        {
-          day: "۱۰ خرداد",
-          title: "ورود + خوش‌آمد",
-          text: "رسیدن، استقرار، شنا و غروب. برنامه شب را بعد از نهایی شدن اعلام می‌کنیم.",
-        },
+        { day: "۱۰ خرداد", title: "ورود + خوش‌آمد", text: "رسیدن، استقرار، شنا و غروب. برنامه شب را بعد از نهایی‌شدن اعلام می‌کنیم." },
         {
           day: "۱۱ خرداد",
           title: "روز عروسی + افترپارتی",
-          text: "مراسم حوالی غروب، شام کنار دریا و جشن شبانه. جزئیات و برنامه نهایی را نزدیک‌تر به تاریخ ارسال می‌کنیم.",
+          text: "مراسم حوالی غروب، شام کنار دریا و جشن شبانه. برنامه نهایی را نزدیک‌تر ارسال می‌کنیم.",
         },
-        {
-          day: "۱۲ خرداد",
-          title: "خروج دیرتر + خداحافظی",
-          text: "صبح آرام، قهوه، یک شنای آخر و خداحافظی‌ها—بعد حرکت.",
-        },
+        { day: "۱۲ خرداد", title: "خروج دیرتر + خداحافظی", text: "صبح آرام، قهوه، یک شنا و خداحافظی‌ها—بعد حرکت." },
       ],
-      notesTitle: "یک نکته کوتاه",
+      notesTitle: "نکته‌ها",
       notesSubtitle: "دو مورد کوچک (اما مهم) برای روز عروسی.",
       notesCards: [
-        {
-          icon: <Sparkles className="h-5 w-5" />,
-          title: "پوشش مراسم: رسمی",
-          text: "برای خودِ مراسم عروسی، پوشش رسمی—شیک و آراسته.",
-        },
-        {
-          icon: <Info className="h-5 w-5" />,
-          title: "بدون هدیه",
-          text: "لطفاً هیچ هدیه‌ای تهیه نکنید. حضور شما و زحمتی که برای این سفر می‌کشید بزرگ‌ترین هدیه است.",
-        },
-      ],
+        { icon: <Sparkles className="h-5 w-5" />, title: "پوشش: رسمی", text: "برای خودِ مراسم عروسی، پوشش رسمی—شیک و آراسته." },
+        { icon: <Info className="h-5 w-5" />, title: "بدون هدیه", text: "لطفاً هیچ هدیه‌ای تهیه نکنید. حضور شما بزرگ‌ترین هدیه است." },
+        { icon: <Utensils className="h-5 w-5" />, title: "با اشتها بیایید", text: "برای شام و کوکتل‌ها برنامه ویژه داریم—جزئیات بعداً." },
+      ] as Card[],
       travelTitle: "سفر",
-      travelSubtitle:
-        "بیشتر مهمان‌ها به فرودگاه میلاس–بدروم (BJV) پرواز می‌کنند؛ بعضی مسیرها با اتصال از استانبول (IST) است.",
+      travelSubtitle: "بیشتر مهمان‌ها به فرودگاه میلاس–بدروم (BJV) پرواز می‌کنند؛ بعضی مسیرها با اتصال از استانبول (IST) است.",
       travelCards: [
-        {
-          icon: <Plane className="h-5 w-5" />,
-          title: "فرودگاه",
-          text: "نزدیک‌ترین فرودگاه BJV است؛ مسیر زمینی تا ریزورت حدود ۴۵ دقیقه تا ۱ ساعت است.",
-        },
+        { icon: <Plane className="h-5 w-5" />, title: "فرودگاه", text: "نزدیک‌ترین فرودگاه BJV است؛ مسیر زمینی حدود ۴۵ دقیقه تا ۱ ساعت." },
         {
           icon: <MapPin className="h-5 w-5" />,
           title: "رفت‌وآمد",
           text: "ترنسفر خصوصی/تاکسی راحت‌ترین گزینه است؛ اجاره خودرو هم برای انعطاف بیشتر گزینهٔ خوبی است. جزئیات را نزدیک‌تر ارسال می‌کنیم.",
         },
         { icon: <Info className="h-5 w-5" />, title: "ساعت", text: "ساعت ترکیه (TRT، UTC+3)." },
-      ],
+      ] as Card[],
       galleryTitle: "گالری عکس‌های Caresse",
       gallerySubtitle: "برای نمایش تمام‌صفحه روی هر عکس بزنید.",
       loadMore: "نمایش عکس‌های بیشتر",
@@ -697,12 +565,6 @@ export default function CaresseInvite() {
           primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-private-beach-9546-hor-wide.jpg",
         },
         {
-          id: "deck-wide",
-          title: "Signature decks on the waterline",
-          tag: "Deck",
-          primary: "https://cache.marriott.com/is/image/marriotts7prod/lc-bjvlc-deck-35144%3AWide-Hor",
-        },
-        {
           id: "cabanas",
           title: "Cabanas & daybeds",
           tag: "Beach • Cabanas",
@@ -713,12 +575,6 @@ export default function CaresseInvite() {
           title: "Infinity pool above the shoreline",
           tag: "Pool",
           primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-pool-9526-hor-wide.jpg",
-        },
-        {
-          id: "pool-alt-1",
-          title: "Poolline with bay views",
-          tag: "Pool",
-          primary: "https://cache.marriott.com/is/image/marriotts7prod/lc-bjvlc-pool-28022%3AWide-Hor",
         },
         {
           id: "sunset-lounge",
@@ -733,34 +589,16 @@ export default function CaresseInvite() {
           primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-glass-restaurant-9570-hor-wide.jpg",
         },
         {
-          id: "glass-lounge",
-          title: "Glass Lounge",
-          tag: "Cocktails",
-          primary: "https://cache.marriott.com/is/image/marriotts7prod/lc-bjvlc-glass-lounge-27060%3AWide-Hor",
-        },
-        {
           id: "buddha-bar",
           title: "Buddha-Bar Beach Bodrum",
           tag: "Beach Club",
           primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-buddha-restaurant-1797-hor-wide.jpg",
         },
         {
-          id: "la-zucca",
-          title: "La Zucca Pizza Bar",
-          tag: "Dining",
-          primary: "https://cache.marriott.com/is/image/marriotts7prod/lc-bjvlc-la-zucca-pizza-bar-38504%3AWide-Hor",
-        },
-        {
           id: "spa",
           title: "Spa Caresse",
           tag: "Wellness",
           primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-spa-caresse-9616-hor-wide.jpg",
-        },
-        {
-          id: "spa-hot-tub",
-          title: "Spa outdoor hot tub",
-          tag: "Wellness",
-          primary: "https://cache.marriott.com/content/dam/marriott-renditions/BJVLC/bjvlc-spa-caresse-9610-hor-wide.jpg",
         },
         {
           id: "indoor-pool",
@@ -832,47 +670,59 @@ export default function CaresseInvite() {
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-4 pt-28 pb-10 sm:px-6 sm:pt-32 sm:pb-14">
+        <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-28 sm:px-6 sm:pb-14 sm:pt-32">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-end">
-            <div className={cx("lg:col-span-6", rtl && "text-right")}> 
+            <div className={cx("lg:col-span-6", rtl && "text-right")}>
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-4xl sm:text-5xl font-semibold tracking-tight"
+                className="text-4xl font-semibold tracking-tight sm:text-5xl"
               >
-                {text.title}
+                {t.title}
               </motion.h1>
 
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.06 }}
-                className="mt-4 max-w-xl text-base sm:text-lg leading-relaxed text-slate-700"
+                className="mt-4 max-w-xl text-base leading-relaxed text-slate-700 sm:text-lg"
               >
-                {text.copy}
+                {t.copy}
               </motion.p>
 
-              <div className={cx("mt-6 flex flex-wrap gap-2", rtl && "justify-end")}> 
+              <div className={cx("mt-6 flex flex-wrap gap-2", rtl && "justify-end")}>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/45 px-3 py-1 text-sm text-slate-900 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur">
                   <CalendarDays className="h-4 w-4 opacity-80" />
-                  <span className="font-medium">{text.window}</span>
+                  <span className="font-medium">{t.window}</span>
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/45 px-3 py-1 text-sm text-slate-900 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur">
                   <MapPin className="h-4 w-4 opacity-80" />
-                  <span className="font-medium">{text.location}</span>
+                  <span className="font-medium">{t.location}</span>
                 </div>
               </div>
 
-              <div className={cx("mt-7 flex flex-wrap gap-3", rtl && "justify-end")}> 
+              <div className={cx("mt-7 flex flex-wrap gap-3", rtl && "justify-end")}>
                 <a
                   href={details.caresseUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800"
                 >
-                  {text.caresseSite} <ExternalLink className="ml-2 h-4 w-4" />
+                  {t.caresseSite} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
+              </div>
+
+              <div
+                className={cx(
+                  "mt-3 inline-flex max-w-xl items-start gap-2 rounded-2xl border border-fuchsia-200/60 bg-white/55 px-4 py-3 text-sm font-semibold shadow-sm",
+                  rtl ? "justify-end text-right" : "text-left"
+                )}
+              >
+                <Sparkles className="mt-0.5 h-4 w-4 text-fuchsia-600" />
+                <span className="bg-gradient-to-r from-fuchsia-600 to-teal-600 bg-clip-text text-transparent">
+                  {t.rsvp}
+                </span>
               </div>
             </div>
 
@@ -882,12 +732,12 @@ export default function CaresseInvite() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.55, delay: 0.08 }}
-                  className="col-span-12 sm:col-span-7 overflow-hidden rounded-3xl border border-white/55 bg-white/35 shadow-[0_26px_80px_rgba(15,23,42,0.14)]"
+                  className="col-span-12 overflow-hidden rounded-3xl border border-white/55 bg-white/35 shadow-[0_26px_80px_rgba(15,23,42,0.14)] sm:col-span-7"
                 >
                   <SmartImage
                     priority
                     alt={hero?.title ?? "Caresse Bodrum"}
-                    sources={hero?.sources ?? [svgPlaceholderDataUri("Caresse")]}
+                    sources={hero?.sources ?? [svgPlaceholderDataUri("Caresse")]} 
                     className="h-[320px] w-full object-cover sm:h-[440px]"
                   />
                 </motion.div>
@@ -896,12 +746,12 @@ export default function CaresseInvite() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.55, delay: 0.14 }}
-                  className="col-span-12 sm:col-span-5 overflow-hidden rounded-3xl border border-white/55 bg-white/35 shadow-[0_26px_80px_rgba(15,23,42,0.14)]"
+                  className="col-span-12 overflow-hidden rounded-3xl border border-white/55 bg-white/35 shadow-[0_26px_80px_rgba(15,23,42,0.14)] sm:col-span-5"
                 >
                   <SmartImage
                     priority
                     alt={heroB?.title ?? "Caresse Bodrum"}
-                    sources={heroB?.sources ?? [svgPlaceholderDataUri("Caresse")]}
+                    sources={heroB?.sources ?? [svgPlaceholderDataUri("Caresse")]} 
                     className="h-[240px] w-full object-cover sm:h-[440px]"
                   />
                 </motion.div>
@@ -933,35 +783,38 @@ export default function CaresseInvite() {
         <div className="h-px bg-gradient-to-r from-transparent via-slate-900/10 to-transparent" />
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 space-y-12">
-        <SectionShell id="venue" title={text.venueTitle} subtitle={text.venueSubtitle} rtl={rtl}>
+      <div className="mx-auto max-w-6xl space-y-12 px-4 py-10 sm:px-6 sm:py-12">
+        <SectionShell id="venue" title={t.venueTitle} subtitle={t.venueSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.venueCards.map((c, idx) => (
+            {t.venueCards.map((c, idx) => (
               <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
 
-        <SectionShell id="bodrum" title={text.bodrumTitle} subtitle={text.bodrumSubtitle} rtl={rtl}>
+        <SectionShell id="bodrum" title={t.bodrumTitle} subtitle={t.bodrumSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.bodrumCards.map((c, idx) => (
+            {t.bodrumCards.map((c, idx) => (
               <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
 
-        <SectionShell id="istanbul" title={text.istanbulTitle} subtitle={text.istanbulSubtitle} rtl={rtl}>
+        <SectionShell id="istanbul" title={t.istanbulTitle} subtitle={t.istanbulSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.istanbulCards.map((c, idx) => (
+            {t.istanbulCards.map((c, idx) => (
               <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
 
-        <SectionShell id="weekend" title={text.weekendTitle} subtitle={text.weekendSubtitle} rtl={rtl}>
+        <SectionShell id="weekend" title={t.weekendTitle} subtitle={t.weekendSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.weekend.map((c) => (
-              <div key={c.day} className={cx("rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm", rtl && "text-right")}> 
+            {t.weekend.map((c) => (
+              <div
+                key={c.day}
+                className={cx("rounded-3xl border border-slate-900/10 bg-white/65 p-5 shadow-sm", rtl && "text-right")}
+              >
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{c.day}</div>
                 <div className="mt-1 text-lg font-semibold">{c.title}</div>
                 <div className="mt-2 text-sm text-slate-700">{c.text}</div>
@@ -970,23 +823,23 @@ export default function CaresseInvite() {
           </div>
         </SectionShell>
 
-        <SectionShell id="notes" title={text.notesTitle} subtitle={text.notesSubtitle} rtl={rtl}>
+        <SectionShell id="notes" title={t.notesTitle} subtitle={t.notesSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.notesCards.map((c, idx) => (
+            {t.notesCards.map((c, idx) => (
               <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
 
-        <SectionShell id="travel" title={text.travelTitle} subtitle={text.travelSubtitle} rtl={rtl}>
+        <SectionShell id="travel" title={t.travelTitle} subtitle={t.travelSubtitle} rtl={rtl}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {text.travelCards.map((c, idx) => (
+            {t.travelCards.map((c, idx) => (
               <InfoCard key={idx} icon={c.icon} title={c.title} text={c.text} />
             ))}
           </div>
         </SectionShell>
 
-        <SectionShell id="gallery" title={text.galleryTitle} subtitle={text.gallerySubtitle} rtl={rtl}>
+        <SectionShell id="gallery" title={t.galleryTitle} subtitle={t.gallerySubtitle} rtl={rtl}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {visiblePhotos.map((p, i) => {
               const big = i % 10 === 0 || i % 10 === 6;
@@ -1028,26 +881,19 @@ export default function CaresseInvite() {
                 onClick={() => setVisibleCount((v) => Math.min(v + 12, photos.length))}
                 className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800"
               >
-                {text.loadMore}
+                {t.loadMore}
               </button>
             </div>
           ) : null}
         </SectionShell>
-        <div
-          className={cx(
-            "rounded-3xl border border-slate-900/10 bg-white/60 p-6 text-center shadow-sm",
-            rtl && "text-right"
-          )}
-        >
-          <div className={cx("flex justify-center", rtl && "justify-end")}
-          >
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white">
-              <Sparkles className="h-4 w-4" />
-              Bodrum • Aegean Sea • 2026
-            </div>
+
+        <div className={cx("rounded-3xl border border-slate-900/10 bg-white/60 p-6 text-center shadow-sm", rtl && "text-right")}>
+          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white">
+            <Sparkles className="h-4 w-4" />
+            Bodrum • Aegean Sea • 2026
           </div>
-          <div className="mt-3 text-xl font-semibold">{text.footer}</div>
-          <div className="mt-1 text-sm text-slate-700">{text.footer2}</div>
+          <div className="mt-3 text-xl font-semibold">{t.footer}</div>
+          <div className="mt-1 text-sm text-slate-700">{t.footer2}</div>
         </div>
       </div>
 
